@@ -14,7 +14,7 @@ describe "database structure after running migrations" do
 
 
     it "has columns with the right names" do
-      expected_column_names = ["id", "age", "weight", "name", "license", "owner_id" "created_at", "updated_at"].sort
+      expected_column_names = ["id", "age", "weight", "name", "license", "owner_id", "created_at", "updated_at"].sort
       actual_column_names   = database_connection.columns(:dogs).map(&:name).sort
 
       expect(actual_column_names).to eq expected_column_names
