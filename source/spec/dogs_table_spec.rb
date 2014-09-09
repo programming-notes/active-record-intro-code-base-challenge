@@ -14,7 +14,7 @@ describe "database structure after running migrations" do
 
 
     it "has columns with the right names" do
-      expected_column_names = ["id", "age", "weight", "name", "license", "created_at", "updated_at"].sort
+      expected_column_names = ["id", "age", "weight", "name", "license", "owner_id" "created_at", "updated_at"].sort
       actual_column_names   = database_connection.columns(:dogs).map(&:name).sort
 
       expect(actual_column_names).to eq expected_column_names
@@ -22,7 +22,7 @@ describe "database structure after running migrations" do
 
 
     it "has columns of the proper type" do
-      expected_column_types_and_names = { :integer => ["id", "age", "weight"],
+      expected_column_types_and_names = { :integer => ["id", "age", "owner_id", "weight"],
                                           :string => ["name", "license"],
                                           :datetime => ["created_at", "updated_at"] }
 
@@ -30,6 +30,7 @@ describe "database structure after running migrations" do
 
       actual_column_types_and_names = dogs_table_columns.each_with_object Hash.new(Array.new) do |column, memo|
                                         memo[column.type] += [column.name]
+                                        memo[column.type].sort!
                                       end
 
       expect(actual_column_types_and_names).to eq expected_column_types_and_names
