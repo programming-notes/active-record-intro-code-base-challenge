@@ -22,9 +22,9 @@ describe "database structure after running migrations" do
 
 
     it "has columns of the proper type" do
-      expected_column_types_and_names = { :integer => ["id", "age", "owner_id", "weight"],
-                                          :string => ["name", "license"],
-                                          :datetime => ["created_at", "updated_at"] }
+      expected_column_types_and_names = { :integer => ["id", "age", "owner_id", "weight"].sort,
+                                          :string => ["name", "license"].sort,
+                                          :datetime => ["created_at", "updated_at"].sort }
 
       dogs_table_columns = database_connection.columns(:dogs)
 
