@@ -60,71 +60,94 @@ The `Gemfile` and `Gemfile.lock` files specify the gems used in this application
 
 ## Releases
 
-### Release 0:  Practice Working With the Code Base
+### Release 0:  Installing Gems
+This challenge is more like a tutorial.  It is designed to give exposure to working with Bundler, Rake tasks, and the console.  To begin, we're going to make sure that we have the required gems installed on our system.
 
-Designed to get you exposure to working with Bundler, Rake tasks, and the console, this challenge is more like a tutorial.  Follow the steps below.
+```
+$ gem install bundler
+```
+*Figure 2*.  Installing the Bundler gem.
 
-##### 1. Install Gems
+We're going to use Bundler to install gems and to determine which versions of gems to use.  We first need to make sure that it's installed on our system (see Figure 2).  
 
--  From the command line, run `bundle install`.
+```
+$ bundle install
+```
+*Figure 3*.  Installing gems listed in the Gemfile.
 
-  This command will install any necessary gems that are missing from our system.  Because the code base provides a `Gemfile.lock` file, Bundler will use this file to determine exactly which version of each gem to install.
+When bundler is installed, it provides a command-line utility.  We can use this utility to install any necessary gems that are missing from our system (see Figure 3).  Because the code base provides a `Gemfile.lock` file, Bundler will use this file to determine exactly which version of each gem to install.  We'll begin most of our challenges going forward with this step of ensuring that all necessary gems are installed.
+
+
+### Release 1:  Create the Database
+```
+$ bundle exec rake db:create
+```
+*Figure 4*.  Executing the rake task for creating the database.
+
+Our next step is to create the database for our application.  Run the Rake task for creating the database (see Figure 4).  This task will create the SQLite3 database file in the `db/` directory.  Prefacing our command with `bundle exec` executes the command within the context of the gems specified for this application (i.e., we use the right version of the gems).
+
+*Note:* We'll actually be creating two databases at the same time.  One for development, which we'll use in the console and when running an application.  Another strictly for testing.
+
+
+### Release 2:  Check Database Version
+```
+$ bundle exec rake db:version
+```
+*Figure 5*.  Executing the rake task for checking the database version.
+
+We'll be creating migrations that change our database by adding or dropping tables, adding columns, changing column names, etc.  Active Record will keep track of which migrations it's run—this is done based on a file naming convention that we'll address later.
+
+We can determine the last migration to have run by asking for the version of the database (see Figure 5).  In our case, we haven't run any migrations, so we should see something like `Current version: 0`.
+
+
+### Release 3:  Run the Test Suite
+```
+$ bundle exec rake spec
+```
+*Figure 6*.  Executing the rake task for running the test suite.
+
+As mentioned in the *Summary*, the Rake spec task is an alternative to the rspec command for running the test suite (see Figure 6).  In our app, we have a `spec/schema/dogs_table_spec.rb` file that tests the structure of our database.  According to the tests, there should be a `dogs` table with a series of expected columns (i.e., columns that are properly named and of the right type).  Because we've yet to run any migrations, all the tests should fail.
+
+
+### Release 4:  Run the Migrations
+```
+$ bundle exec rake db:migrate
+```
+*Figure 7*.  Executing the rake task for running the database migrations.
+
+As mentioned, a migration file that creates a dogs table in our database has been provided.  We can run our migrations with the `db:migrate` Rake task (see Figure 7).  When we run this task, any migration files that have yet to be run, will be run.
   
-  This command requires Bundler to be installed on our system.  If it's not already installed, run `gem install bundler`.
-
-##### 2. Create the Database
-
-- From the command line, run `bundle exec rake db:create`.
-
-  This executes the `create` Rake task defined within the `db` namespace.  It will create the .sqlite3 database file in the `db/` directory.  Prefacing our command with `bundle exec` executes the command within the context of the gems specified for this application (i.e., we use the right version of the gems).
-
-##### 3. Check Database Version
-
-- From the command line, run `bundle exec rake db:version`.
-
-  This executes the `version` Rake task defined within the `db` namespace.  In our case, we haven't run any migrations, so we should see something like `Current version: 0`.
-
-##### 4. Run the Test Suite
-
-- From the command line, run `bundle exec rake spec`.
-
-  This executes the `spec` Rake task, which runs all of our tests.  In our app, we have a `dogs_table_spec.rb` file that tests the structure of our database.  There should be a `dogs` table with all the desired columns (i.e., they're properly named and of the right type).  Because we've yet to run any migrations, all the tests should fail.
-
-##### 5. Migrate the Database
-
--  From the command line, run `bundle exec rake db:migrate`.
-
-  This executes the `migrate` Rake task defined within the `db` namespace.  Any migration files that have yet to be run, will be run.
+Lets take a look at the output in the console.  The first line of output should read something like `CREATE TABLE "schema_migrations" ("version" ... )`.  Active Record is creating a table where it can track which migrations have been run, using the timestamp from the filename as an identifier.  The last bit of SQL run should read something like `INSERT INTO "schema_migrations" ("version") VALUES (?)  [["version", "20140901164300"]]`.  Active Record is noting that it's run our migration file, so that it won't run it again.
   
-  Lets take a look at the output in the console.  The first line of output should read something like `CREATE TABLE "schema_migrations" ("version" ... )`.  Active Record is creating a table where it can track which migrations have been run, using the timestamp from the filename as an identifier.  The last bit of SQL run should read something like `INSERT INTO "schema_migrations" ("version") VALUES (?)  [["version", "20140901164300"]]`.  Active Record is noting that it's run our migration file, so that it won't run it again.
+In the middle of the output, we should see a line similar to `Migrating to CreateDogs (20140901164300)`.  Active Record is letting us know which migration is being run.  And a few lines after this one, we find the SQL statement that is executed:  `CREATE TABLE "dogs" ("id" INTEGER ... "updated_at" datetime NOT NULL)`.  Finally, Active Record lets us know that it's done with this migration:  `20140901164300 CreateDogs: migrated (0.0028s)`.
+
+
+### Release 5:  Check Database Version
+Now that we've run our migration, the database version should no longer be `0`.  When we run the Rake task to check the database version, Active Record will check the `schema_migrations` table and let us know the the timestamp of the last migration that was run.  We should see something like `Current version: 20140901164300`.  Remember, this version number is taken from the timestamp at the beginning of our migration's filename:  `20140901164300_create_dogs.rb`.
+
+
+### Release 6:  Run the Test Suite
+Now that we've run our migration to create the dogs table, all of our tests should pass—the provided `CreateDogs` migration matches the specs.  Let's run the tests again; all of the tests should pass.
+
+
+### Release 7:  Populate the Database with Seed Data
+```
+$ bundle exec rake db:seed
+```
+*Figure 8*.  Executing the Rake task to seed our database.
+
+We'll begin referring to putting data into our database as seeding the database.  We can write scripts that add data for us in the file `db/seeds/rb`.  An example file is provided that saves two dogs to our database.
+
+A Rake task is provided to execute the code in the seeds file (see Figure 8).  As the file is read in, the code executes.  Active Record is setup to log its activity and reading through the output in the console, we can see that two SQL `INSERT` statements were executed.  One for each dog.  For example something like, `INSERT INTO "dogs" ("name", ... ) VALUES (?, ... )  [["name", "Jayda"], ... ]`.
   
-  In the middle of the output, we should see a line similar to `Migrating to CreateDogs (20140901164300)`.  Active Record is letting us know which migration is being run.  And a few lines after this one, we find the SQL statement that is executed:  `CREATE TABLE "dogs" ("id" INTEGER ... "updated_at" datetime)`.  Finally, Active Record lets us know that it's done with this migration:  `20140901164300 CreateDogs: migrated (0.0028s)`.
-
-##### 6. Check Database Version
-
-- From the command line, run `bundle exec rake db:version`.
-
-  Active Record will check the `schema_migrations` table and let us know the the timestamp of the last migration that was run.  Now that we've run a migration, we should see something like `Current version: 20140901164300`.
-
-##### 7. Run the Test Suite
-
-- From the command line, run `bundle exec rake spec`.
-
-  The provided `CreateDogs` migration matches the specs.  Now that we've run the migration, all of the tests should pass.
-
-##### 8. Populate the Database with Seed Data
-
-- From the command line, run `bundle exec rake db:seed`.
-
-  This executes the `seed` Rake task defined within the `db` namespace.  This task requires the `db/seeds.rb` file.  As the file is read in, the code executes.  
   
-  In this example, two dog records are added to the database.  Reading through the output in the console, we can see that two SQL `INSERT` statements were executed.  One for each dog.  For example, `INSERT INTO "dogs" ("age", ... ) VALUES (?, ... )  [["age", 1], ... ]`.
-  
-##### 9. Open the Console
+### Release 8:  Open and Use the Console
+```
+$ bundle exec rake console
+```
+*Figure 9*.  Executing the Rake task to open the console.
 
-- From the command line, run `bundle exec rake console`.
-
-  This executes the `console` Rake task, opening IRB with our environment loaded.  We can interact with our models in the console.  We can select records from the database, insert new records, destroy records, etc.
+We can open IRB with our environment loaded (see Figure 9).  We'll refer to this as the *console*.  Here we can interact with our models:  selecting records from the database, inserting new records, destroying records, etc.
   
   To sample what we can do from within the console, run ...
   
@@ -134,7 +157,7 @@ Designed to get you exposure to working with Bundler, Rake tasks, and the consol
   
   -  `ActiveRecord::Base.connection.columns(:dogs)`
 
-      This returns an array of objects representing the columns in the `dogs` table—one object for each column.  The objects themselves happen to be instances of the `ActiveRecord::ConnectionAdapters::SQLite3Column` class.
+      This returns an array of objects representing the columns in the `dogs` table—one object for each column.  The objects themselves happen to be instances of the `ActiveRecord::ConnectionAdapters::Column` class.
   
   -  `Dog`
 
@@ -148,23 +171,35 @@ Designed to get you exposure to working with Bundler, Rake tasks, and the consol
 
      This will exit the console, just like IRB.  Alternatively, use *control + d*.
 
-##### 10. Rollback the Database
 
-- From the command line, run `bundle exec rake db:rollback`.
+### Release 9:  Rollback the Database
+```
+$ bundle exec rake db:rollback
+```
+*Figure 10*.  Executing the Rake task to undo the last migration.
 
-  This executes the `rollback` Rake task defined within the `db` namespace.  The default behavior is to undo the last migration, but you could specify multiple steps.  In executing this task, Active Record pulled the last timestamp from the `schema_migrations` table, found the `change` method defined there, and undid it.  In our case, the `CreateDogs` migration created the `dogs` table.  So, to rollback this migration, Active Record dropped the `dogs` table.  Any data in the table was lost.
+Sometimes we want to undo a change to our database—undo a migration.  We call this rolling back the database, and we have a Rake task to handle this (see Figure 10).
+
+The default behavior of the Rake task is to undo the last migration, but you could specify multiple steps.  In executing this task, Active Record pulls the last timestamp from the `schema_migrations` table, found the `change` method defined there, and undid it.  In our case, the `CreateDogs` migration creates the `dogs` table.  So, to rollback this migration, Active Record would drop the `dogs` table.  As a side effect, any data in the table was lost.
   
-  We can see in the output that Active Record executed the SQL statement `DROP TABLE "dogs"`.  It also updated the `schema_migrations` table, so that it no longer has a record of running our migration:  `DELETE FROM "schema_migrations" WHERE ... "version" = '20140901164300'`.
+When we run the rollback task, we can see in the output that Active Record executed the SQL statement `DROP TABLE "dogs"`.  It also updated the `schema_migrations` table, so that it no longer has a record of running our migration:  `DELETE FROM "schema_migrations" WHERE ... "version" = '20140901164300'`.
   
-##### 11. Drop the Database
+### Release 10:  Drop the Database
+```
+$ bundle exec rake db:drop
+```
+*Figure 11*.  Executing the Rake task to drop the database.
 
-- From the command line, run `bundle exec rake db:drop`.
+Sometimes we'll decide to get rid of our database completely, though this shouldn't become a habit.  If we do want to remove our database we can drop it with a Rake task (see Figure 11).  Our SQLite3 database file will be removed.
 
-  This executes the `drop` Rake task defined within the `db` namespace.  In our case, it will delete our .sqlite3 file.
 
-### Release 1:  Reflect
+### Release 11:  Reflect
 
-Once you've completed Steps 1 - 11 from Release 0, checkout a new branch and create a file in the root directory:  `reflections.txt`.  Reflect on what you've—individually and/or as a pair—learned through this challenge and write your reflects in the file.  Then commit, push your branch, and submit a pull request.
+Once we've worked through Release 0 to 10, checkout a new branch and create a file in the root directory:  `reflections.txt`.  Let's reflect on what we've learned through this challenge and write our learnings in the file.  Then commit our changes, push our branch, and submit a pull request.
+
+
+## Conclusion
+This challenge was designed to get us working with the code base that we'll be working with as we proceed through Dev Bootcamp.  We'll grow accustomed to bundling, running rake tasks, opening the console, etc.  We've also been exposed to a little bit of what Active Record does for us and how we interact with it, though this might be confusing at the moment.  The challenges that follow will focus on developing our understanding of specific aspects of Active Record.
 
 [Ruby Docs Pathname]: http://www.ruby-doc.org/stdlib-2.1.2/libdoc/pathname/rdoc/Pathname.html
 [Ruby Docs Dir]: http://www.ruby-doc.org/core-2.1.2/Dir.html
