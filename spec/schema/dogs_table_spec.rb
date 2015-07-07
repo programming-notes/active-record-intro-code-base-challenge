@@ -1,4 +1,4 @@
-require_relative '../config/environment'
+require_relative '../spec_helper'
 
 describe "database structure after running migrations" do
 
@@ -7,33 +7,30 @@ describe "database structure after running migrations" do
 
   describe "dogs table" do
     it "dogs table in the database" do
-      dogs_table = database_connection.table_exists?(:dogs)
-
-      expect(dogs_table).to be_truthy
+      expect(database_connection.table_exists? :dogs).to be_truthy, "Expected the database to have a dogs table"
     end
 
 
-    it "has columns with the right names" do
-      expected_column_names = ["id", "age", "weight", "name", "license", "owner_id", "created_at", "updated_at"].sort
-      actual_column_names   = database_connection.columns(:dogs).map(&:name).sort
+    expected_column_types_and_names = {
+      :integer  => ["id", "age", "owner_id", "weight"],
+      :string   => ["name", "license"],
+      :datetime => ["created_at", "updated_at"]
+    }
 
-      expect(actual_column_names).to eq expected_column_names
+    begin
+      actual_columns = ActiveRecord::Base.connection.columns(:dogs)
+    rescue
+      actual_columns = []
     end
 
-
-    it "has columns of the proper type" do
-      expected_column_types_and_names = { :integer => ["id", "age", "owner_id", "weight"].sort,
-                                          :string => ["name", "license"].sort,
-                                          :datetime => ["created_at", "updated_at"].sort }
-
-      dogs_table_columns = database_connection.columns(:dogs)
-
-      actual_column_types_and_names = dogs_table_columns.each_with_object Hash.new(Array.new) do |column, memo|
-                                        memo[column.type] += [column.name]
-                                        memo[column.type].sort!
-                                      end
-
-      expect(actual_column_types_and_names).to eq expected_column_types_and_names
+    expected_column_types_and_names.each do |expected_type, expected_column_names|
+      expected_column_names.each do |expected_column_name|
+        it "has a #{expected_type} column named #{expected_column_name}" do
+          match_criteria = -> (actual_column) { actual_column.type == expected_type && actual_column.name == expected_column_name}
+          matching_column = actual_columns.find &match_criteria
+          expect(matching_column).to be_truthy, "Did not find a #{expected_type} column named #{expected_column_name} in the dogs table"
+        end
+      end
     end
   end
 end
