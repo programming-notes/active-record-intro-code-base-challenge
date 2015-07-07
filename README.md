@@ -1,17 +1,16 @@
 #Active Record Intro:  Code Base
 
 ## Summary
-
 This challenge introduces the code base with which we'll be working as we become acquainted with Active Record, the object-relational mapper that we'll be using.  Before we jump into the challenges proper, we should take a look at this code base, familiarizing ourselves with the directory structure and what each part is doing.  This directory structure mimics the structures we'll see in our Phase 2 and 3 applications.
 
-### Environment Configuration
 
+### Environment Configuration
 Going forward, the setup of our applications will be a little more complex than it has been in previous challenges.  We're going to be more intentional about how we organize our files.  Also, we'll need to do some configuration (e.g., connecting to our database).  This code base—or skeleton—provides the configuration that we'll need to interact with a database using Active Record; however, we should understand what it's doing.  
 
 The configuration of our application is done in the file `config/environment.rb`.  It requires all the gems and Ruby libraries that we'll be using.  It loads all of our model files and sets up the database connection.  Take some time to look through the code.  We'll probably find something new, like the [`Pathname`][Ruby Docs Pathname] and [`Dir`][Ruby Docs Dir] classes and the configuration of `ActiveRecord::Base` to connect with the database.  It's okay if not all of this makes perfect sense right now, but we should have the gist of what's happening ... if not exactly how.
 
-### Rakefile
 
+### Rakefile
 ```
 $ bundle exec rake -T
 ```
@@ -36,19 +35,20 @@ The code base also supplies a Rakefile, providing us with a number of helpful ta
 
   Just like the `:db` namespace, the `:generate` namespace encapsulates tasks for creating or generating files:  `model` for creating files for Active Record models, `migration` for creating files for updating our database, and `spec` for creating test files for our models.
 
-### Model-view-controller Organization
 
+### Model-view-controller Organization
 This code base is setup for implementing the model-view-controller design pattern.  The files for each will be located in individual folders under `app/`.  As we begin working with Active Record, we won't work much with controllers and views, rather we'll focus on working with Active Record models.
 
 All of the model classes that we write will be located within the `app/models` folder.  Each class should be defined in its own file.  As an example, a `Dog` class has been written in the file `app/models/dog.rb`.  The classes in this folder do not need to be backed by the database—in other words, they don't need to inherit from `ActiveRecord::Base`, but can be normal Ruby classes.
 
-### Database
 
+### Database
 The `db/` directory is where files associated with our database are located.  Our SQLite3 database will be located in this directory after we've created it.
 
 We'll be creating files called *migrations* that help to build our database schema (e.g., creating tables).  All of the migrations that we write will be located within the `db/migrate` folder:  one migration for each change to the database schema.  The `db:migrate` Rake task tells `ActiveRecord::Migrator` to look here for migration files.  An example migration file, `20140901164300_create_dogs.rb`, has been provided—it will create a dogs table in our database.
 
 Sometime we'll want to populate our database with data, so that we can use it or manually test it.  To do so, we can open the rake console and add records, or we could write a script to do it for us.  We can write Ruby code in the `seeds.rb` file.  The code is then executed through the Rake task:  `rake db:seed`.  An example seeds file has been provided that adds a couple dogs to the database.
+
 
 ### Organizing Test Files
 All of our testing files will be located within the `spec/` directory.  All of the specs can be run with the `spec` Rake task.  An example spec file has been provided:  `spec/schema/dogs_table_spec.rb`.
