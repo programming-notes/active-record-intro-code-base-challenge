@@ -39,7 +39,7 @@ The code base also supplies a Rakefile, providing us with a number of helpful ta
 ### Model-view-controller Organization
 This code base is setup for implementing the model-view-controller design pattern.  The files for each will be located in individual folders under `app/`.  As we begin working with Active Record, we won't work much with controllers and views, rather we'll focus on working with Active Record models.
 
-All of the model classes that we write will be located within the `app/models` folder.  Each class should be defined in its own file.  As an example, a `Dog` class has been written in the file `app/models/dog.rb`.  The classes in this folder do not need to be backed by the database—in other words, they don't need to inherit from `ActiveRecord::Base`, but can be normal Ruby classes.
+All of the model classes that we write will be located within the `app/models` folder.  Each class should be defined in its own file.  As an example, a `Dog` class has been written in the file `app/models/dog.rb`. This folder can contain both our Active Record models (i.e., the classes backed by the database) and also our normal Ruby classes.
 
 
 ### Database
